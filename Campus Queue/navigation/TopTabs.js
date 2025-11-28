@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Dimensions } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { RFValue, fontSizes, spacing } from '../utils/responsiveUtils';
 
 import FastFood from '../screens/FastFood';
 import Healthy from '../screens/Healthy';
@@ -10,6 +11,7 @@ import Asian from '../screens/Asian';
 import All from '../screens/All';
 
 const Tab = createMaterialTopTabNavigator();
+const { width: windowWidth } = Dimensions.get('window');
 
 export default function TopTabs() {
   return (
@@ -29,6 +31,7 @@ export default function TopTabs() {
         <TextInput
           placeholder="Search for food or restaurants…"
           style={styles.search}
+          placeholderTextColor="#999"
         />
       </View>
 
@@ -36,7 +39,7 @@ export default function TopTabs() {
       <Tab.Navigator
         screenOptions={{
           tabBarStyle: { backgroundColor: '#1455F1' },
-          tabBarLabelStyle: { fontSize: 14, fontWeight: 'bold', color: "white" },
+          tabBarLabelStyle: { fontSize: RFValue(12), fontWeight: 'bold', color: "white" },
           tabBarIndicatorStyle: { backgroundColor: 'white', height: 3 },
           tabBarScrollEnabled: true,
         }}
@@ -51,28 +54,50 @@ export default function TopTabs() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 50,
-    paddingBottom: 20,
-    paddingHorizontal: 15,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.lg,
+    paddingHorizontal: spacing.lg,
     backgroundColor: "#1455F1",
   },
-  welcome: { color: "#fff", fontSize: 16, opacity: 0.9 },
-  title: { color: "#fff", fontSize: 26, fontWeight: "700" },
-  row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  welcome: { 
+    color: "#fff", 
+    fontSize: fontSizes.base, 
+    opacity: 0.9,
+    marginBottom: spacing.sm
+  },
+  title: { 
+    color: "#fff", 
+    fontSize: fontSizes.xxxl, 
+    fontWeight: "700",
+    flex: 1
+  },
+  row: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "center",
+    marginVertical: spacing.md,
+    flexWrap: 'wrap'
+  },
   campusBtn: {
     backgroundColor: "#ffffff22",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: 12,
+    marginTop: spacing.sm,
   },
-  campusText: { color: "#fff", fontSize: 14 },
+  campusText: { 
+    color: "#fff", 
+    fontSize: fontSizes.sm,
+    fontWeight: '600'
+  },
   search: {
-    marginTop: 15,
+    marginTop: spacing.lg,
     backgroundColor: "#fff",
     borderRadius: 10,
-    padding: 12,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    fontSize: fontSizes.base,
   },
 });

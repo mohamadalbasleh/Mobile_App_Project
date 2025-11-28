@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
+import { RFValue, fontSizes, spacing } from '../utils/responsiveUtils';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -44,17 +45,17 @@ const Cart = ({ route, navigation }) => {
   const isEmpty = cartItems.length === 0;
 
   return (
-    <View style={{ flex: 1, padding: 15 }}>
+    <View style={{ flex: 1, padding: spacing.lg, backgroundColor: '#f5f5f5' }}>
 
       {/* 🟦 Show EMPTY CART if no items */}
       {isEmpty ? (
         <>
-          <View style={{ alignItems: 'center', marginTop: 50 }}>
-            <Feather name="shopping-cart" size={120} color="#666" />
-            <Text style={{ fontWeight: 'bold', fontSize: 30, marginTop: 20 }}>
+          <View style={{ alignItems: 'center', marginTop: windowHeight * 0.1, flex: 1, justifyContent: 'center' }}>
+            <Feather name="shopping-cart" size={RFValue(100)} color="#666" />
+            <Text style={{ fontWeight: 'bold', fontSize: fontSizes.xxl, marginTop: spacing.lg, textAlign: 'center' }}>
               Your cart is empty
             </Text>
-            <Text style={{ marginTop: 10, fontSize: 16 }}>
+            <Text style={{ marginTop: spacing.md, fontSize: fontSizes.base, textAlign: 'center', color: '#666' }}>
               Add items from your favorite campus vendors
             </Text>
           </View>
@@ -66,26 +67,26 @@ const Cart = ({ route, navigation }) => {
       ) : (
         <>
           {/* 🟦 Items Count */}
-          <Text style={{ fontSize: 18, marginBottom: 10 }}>
+          <Text style={{ fontSize: fontSizes.lg, marginBottom: spacing.md, fontWeight: '600' }}>
             {cartItems.length} item(s)
           </Text>
 
           {/* 🟦 Cart Items List */}
-          <ScrollView style={{ maxHeight: windowHeight * 0.5 }}>
+          <ScrollView style={{ maxHeight: windowHeight * 0.45, marginBottom: spacing.lg }}>
             {cartItems.map((item) => (
               <View key={item.id} style={styles.cartItem}>
                 <Image
                   source={{ uri: item.image }}
-                  style={{ width: 80, height: 80, borderRadius: 10 }}
+                  style={{ width: RFValue(80), height: RFValue(80), borderRadius: 10 }}
                 />
 
-                <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                <View style={{ flex: 1, marginLeft: spacing.md }}>
+                  <Text style={{ fontSize: fontSizes.lg, fontWeight: '600' }}>
                     {item.name}
                   </Text>
 
-                  <Text style={{ flexDirection: 'row', marginVertical: 3 }}>
-                    <Feather name="dollar-sign" size={16} color="gray" />
+                  <Text style={{ flexDirection: 'row', marginVertical: spacing.sm, fontSize: fontSizes.base }}>
+                    <Feather name="dollar-sign" size={RFValue(16)} color="gray" />
                     {item.price.toFixed(2)}
                   </Text>
 
@@ -104,43 +105,43 @@ const Cart = ({ route, navigation }) => {
                 </View>
 
                 {/* Delete */}
-                <TouchableOpacity onPress={() => removeItem(item.id)}>
-                  <Feather name="trash" size={22} color="red" />
+                <TouchableOpacity onPress={() => removeItem(item.id)} style={{ padding: spacing.sm }}>
+                  <Feather name="trash" size={RFValue(20)} color="red" />
                 </TouchableOpacity>
               </View>
             ))}
           </ScrollView>
 
           {/* 🟦 Checkout Section */}
-          <View style={{ marginTop: 20 }}>
+          <View style={{ marginTop: spacing.lg }}>
             <View style={styles.checkoutRow}>
               <Text style={styles.checkoutLabel}>Subtotal</Text>
               <Text style={styles.checkoutLabel}>
-                <Feather name="dollar-sign" size={18} /> {subtotal.toFixed(2)}
+                <Feather name="dollar-sign" size={RFValue(16)} /> {subtotal.toFixed(2)}
               </Text>
             </View>
 
             <View style={styles.checkoutRow}>
               <Text style={styles.checkoutLabel}>Tax</Text>
               <Text style={styles.checkoutLabel}>
-                <Feather name="dollar-sign" size={18} /> {tax.toFixed(2)}
+                <Feather name="dollar-sign" size={RFValue(16)} /> {tax.toFixed(2)}
               </Text>
             </View>
 
-            <View style={styles.checkoutRow}>
-              <Text style={styles.checkoutLabel}>Total</Text>
-              <Text style={styles.checkoutLabel}>
-                <Feather name="dollar-sign" size={18} /> {total.toFixed(2)}
+            <View style={[styles.checkoutRow, { borderTopWidth: 1, borderTopColor: '#ddd', paddingTop: spacing.md, marginTop: spacing.md }]}>
+              <Text style={[styles.checkoutLabel, { fontWeight: '700' }]}>Total</Text>
+              <Text style={[styles.checkoutLabel, { fontWeight: '700' }]}>
+                <Feather name="dollar-sign" size={RFValue(18)} /> {total.toFixed(2)}
               </Text>
             </View>
 
-            <View style={{ marginTop: 10, flexDirection: "row", alignItems: "center" }}>
-              <Feather name="clock" size={20} color="blue" />
-              <Text style={{ marginLeft: 6 }}>Estimated Pickup: 15 minutes</Text>
+            <View style={{ marginTop: spacing.lg, flexDirection: "row", alignItems: "center" }}>
+              <Feather name="clock" size={RFValue(18)} color="blue" />
+              <Text style={{ marginLeft: spacing.md, fontSize: fontSizes.base }}>Estimated Pickup: 15 minutes</Text>
             </View>
           </View>
 
-          <TouchableOpacity style={[styles.Browse, { width: windowWidth * 0.9 }]}
+          <TouchableOpacity style={styles.Browse}
             onPress={() => navigation.navigate("Home")}>
             <Text style={styles.buttonText}>
               Proceed to checkout
@@ -157,55 +158,60 @@ export default Cart;
 const styles = StyleSheet.create({
   cartItem: {
     flexDirection: "row",
-    padding: 10,
+    padding: spacing.md,
     backgroundColor: "#fff",
     borderRadius: 10,
-    marginBottom: 15,
+    marginBottom: spacing.lg,
     alignItems: "center",
   },
 
   qtyContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 8,
+    marginTop: spacing.md,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 6,
+    width: 'auto',
+    alignSelf: 'flex-start'
   },
 
   qtyBtn: {
-    fontSize: 24,
+    fontSize: fontSizes.lg,
     fontWeight: "bold",
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm
   },
 
   qtyNumber: {
-    fontSize: 20,
+    fontSize: fontSizes.lg,
     fontWeight: "600",
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.md,
   },
 
   checkoutRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 8,
+    marginTop: spacing.md,
   },
 
   checkoutLabel: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: fontSizes.lg,
+    fontWeight: "600",
   },
 
   Browse: {
     backgroundColor: "#003bfd",
-    paddingVertical: 15,
+    paddingVertical: spacing.lg,
     borderRadius: 10,
-    marginTop: 30,
+    marginTop: spacing.xxl,
     alignSelf: "center",
-    width: windowWidth * 0.5,
+    width: Math.min(windowWidth * 0.85, 350),
   },
 
   buttonText: {
     color: "white",
     fontWeight: "bold",
     textAlign: "center",
-    fontSize: 18,
+    fontSize: fontSizes.lg,
   },
 });

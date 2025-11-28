@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { RFValue, fontSizes, spacing } from '../utils/responsiveUtils';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -70,28 +71,29 @@ const restaurants = [
 
 export default function FastFood({ navigation }) {
    const [FastShop, setFastShop] = useState([]);
-     useEffect(() => {
+   useEffect(() => {
     const filtered = restaurants.filter(r => r.category === "Fast Food");
     setFastShop(filtered);
   }, []);
   return (
-    <ScrollView style={{ flex: 1, padding: 10 }}>
+    <ScrollView style={{ flex: 1, padding: spacing.md }} showsVerticalScrollIndicator={false}>
       {FastShop.map((R, i) => (
         <TouchableOpacity
           key={i}
           style={styles.resView}
           onPress={() => navigation.navigate('Restaurant', { resName: R.name, rating: R.rating, time: R.time })}
+          activeOpacity={0.7}
         >
-          <Image source={{ uri: R.image }} style={{ width: 80, height: 80, borderRadius: 10, marginRight: 10 }} />
+          <Image source={{ uri: R.image }} style={{ width: RFValue(80), height: RFValue(80), borderRadius: 10, marginRight: spacing.md }} />
           <View style={styles.resText}>
-            <Text>{R.name}</Text>
-            <Text>{R.category}</Text>
-            <Text><Feather name="clock" size={16} color="gray" /> {R.time}</Text>
+            <Text style={{fontSize: fontSizes.lg, fontWeight: '600'}}>{R.name}</Text>
+            <Text style={{fontSize: fontSizes.sm, color: '#666', marginTop: spacing.xs}}>{R.category}</Text>
+            <Text style={{fontSize: fontSizes.sm, marginTop: spacing.sm}}><Feather name="clock" size={RFValue(14)} color="gray" /> {R.time}</Text>
           </View>
-          <View>
+          <View style={{justifyContent: 'flex-start', alignItems: 'flex-end', marginLeft: spacing.sm}}>
             <View style={styles.rating}>
-              <Feather name="star" size={16} color="#fffb00ff" />
-              <Text> {R.rating}</Text>
+              <Feather name="star" size={RFValue(14)} color="#fffb00ff" />
+              <Text style={{fontSize: fontSizes.sm, marginLeft: spacing.xs}}>{R.rating}</Text>
             </View>
             <Text style={[styles.open, { backgroundColor: R.status === "Closed" ? "red" : "green" }]}>{R.status}</Text>
           </View>
@@ -102,8 +104,36 @@ export default function FastFood({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  resView: { flexDirection: 'row', marginBottom: 20, padding: 10, backgroundColor: '#fff', borderRadius: 10, alignItems: 'center' },
-  resText: { flex: 1 },
-  open: { borderRadius: 25, width: windowWidth * .2, height: windowHeight * .03, textAlign: 'center', textAlignVertical: 'center' },
-  rating: { paddingLeft: windowWidth * .1, paddingBottom: windowHeight * .05, flexDirection: 'row' },
+  resView: { 
+    flexDirection: 'row', 
+    marginBottom: spacing.lg, 
+    padding: spacing.md, 
+    backgroundColor: '#fff', 
+    borderRadius: 10, 
+    alignItems: 'flex-start',
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  resText: { 
+    flex: 1,
+    marginRight: spacing.sm
+  },
+  open: { 
+    borderRadius: 15, 
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    textAlign: 'center', 
+    fontSize: fontSizes.xs,
+    fontWeight: '600',
+    color: 'white',
+    minWidth: RFValue(70),
+    marginTop: spacing.sm
+  },
+  rating: { 
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
 });

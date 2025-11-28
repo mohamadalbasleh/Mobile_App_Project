@@ -2,6 +2,7 @@ import { StyleSheet, Text, View,Dimensions, TouchableOpacity,Image ,ScrollView} 
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from "@expo/vector-icons";
 import { useEffect } from 'react';
+import { RFValue, fontSizes, spacing } from '../utils/responsiveUtils';
 
 
 const windowWidth = Dimensions.get('window').width
@@ -77,32 +78,32 @@ const { resName, rating, time } = route.params;
 
   return (
     
-    <View style={{  }}>
+    <View style={{}}>
       {/* Custom Header */}
-      <View style={{ flexDirection: "row", alignItems: "center", padding: 15 ,backgroundColor: "#1455F1" }}>
+      <View style={{ flexDirection: "row", alignItems: "center", padding: spacing.lg, backgroundColor: "#1455F1" }}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Feather name="arrow-left" size={24} color="#fff" />
+          <Feather name="arrow-left" size={RFValue(24)} color="#fff" />
         </TouchableOpacity>
 
-        <View style={{ flex: 1, marginLeft: 15 }}>
+        <View style={{ flex: 1, marginLeft: spacing.lg }}>
           {/* Dynamic restaurant name */}
-          <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>
+          <Text style={{ color: "#fff", fontSize: fontSizes.lg, fontWeight: "bold" }}>
             {resName}
           </Text>
 
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-            <Feather name="star" size={16} color="yellow" />
-            <Text style={{ color: "#fff", marginLeft: 4 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: spacing.sm }}>
+            <Feather name="star" size={RFValue(16)} color="yellow" />
+            <Text style={{ color: "#fff", marginLeft: spacing.sm, fontSize: fontSizes.sm }}>
               {rating || 0} {/* default to 0 if not passed */}
             </Text>
 
             <Feather
               name="clock"
-              size={16}
+              size={RFValue(16)}
               color="#fff"
-              style={{ marginLeft: 15 }}
+              style={{ marginLeft: spacing.lg }}
             />
-            <Text style={{ color: "#fff", marginLeft: 4 }}>
+            <Text style={{ color: "#fff", marginLeft: spacing.sm, fontSize: fontSizes.sm }}>
               {time || "N/A"} {/* default if not passed */}
             </Text>
           </View>
@@ -111,18 +112,18 @@ const { resName, rating, time } = route.params;
 
       {/* Content */}
       
-    <ScrollView style={{ padding: 15 }}>
+    <ScrollView style={{ padding: spacing.md }}>
             
             {coffees.map((R, i) => (
             <TouchableOpacity key={i} style={styles.resView}>
                 <View style={styles.resText}>
-                <Text>{R.name}</Text>
-                <Text>{R.description}</Text>
-                <Text>
-                    <Feather name="dollar-sign" size={18} color="gray" /> {R.price}
+                <Text style={{fontSize: fontSizes.base, fontWeight: '600'}}>{R.name}</Text>
+                <Text style={{fontSize: fontSizes.sm, color: '#666', marginTop: spacing.xs}}>{R.description}</Text>
+                <Text style={{fontSize: fontSizes.base, marginTop: spacing.sm}}>
+                    <Feather name="dollar-sign" size={RFValue(16)} color="gray" /> {R.price}
                 </Text>
                 </View>
-                <Image source={{ uri: R.image }} style={{ width: 80, height: 80, borderRadius: 10, marginLeft: 10 }} />
+                <Image source={{ uri: R.image }} style={{ width: RFValue(80), height: RFValue(80), borderRadius: 10, marginLeft: spacing.md }} />
             </TouchableOpacity>
             ))}
         </ScrollView>
@@ -142,26 +143,26 @@ const styles = StyleSheet.create({
     },
     resView:{
       flexDirection: 'row',
-      marginBottom: 20,
-      padding: 10,
+      marginBottom: spacing.lg,
+      padding: spacing.md,
       backgroundColor: '#fff',
       borderRadius: 10,
       alignItems: 'center'
-    },resText:{
+    },
+    resText:{
      flex:1 
-    },open:{
-      
+    },
+    open:{
       borderRadius:25,
       width:windowWidth*.2,
-      height:windowHeight*.03,
+      height:RFValue(30),
       textAlign:'center',
       textAlignVertical:'center'
-      
-    },rating:{
+    },
+    rating:{
       paddingLeft:windowWidth*.1,
       paddingBottom:windowHeight*.05,
       flexDirection:'row'
-      
     }
 
 })

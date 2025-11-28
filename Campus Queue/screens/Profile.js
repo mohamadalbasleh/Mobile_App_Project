@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, Dimensions, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { RFValue, fontSizes, spacing } from '../utils/responsiveUtils';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -114,44 +115,73 @@ export default Profile;
 const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
-    paddingTop:20,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
     backgroundColor: '#1455F1',
-    
   },
-  profileImage: { width: 100, height: 100, borderRadius: 50, marginBottom: 15 },
-  name: { color: '#fff', fontSize: 22, fontWeight: 'bold' },
-  email: { color: '#fff', fontSize: 16, marginTop: 5 },
+  profileImage: { 
+    width: RFValue(100), 
+    height: RFValue(100), 
+    borderRadius: RFValue(50), 
+    marginBottom: spacing.lg 
+  },
+  name: { 
+    color: '#fff', 
+    fontSize: fontSizes.xxl, 
+    fontWeight: 'bold' 
+  },
+  email: { 
+    color: '#fff', 
+    fontSize: fontSizes.base, 
+    marginTop: spacing.sm 
+  },
 
   section: {
-    marginVertical: 10,
+    marginVertical: spacing.md,
     backgroundColor: '#fff',
-    paddingVertical: 10,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
     borderRadius: 10,
+    marginHorizontal: spacing.md,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: fontSizes.lg,
     fontWeight: 'bold',
-    paddingHorizontal: 15,
-    marginBottom: 5,
+    marginBottom: spacing.md,
     color: '#555',
   },
 
   statRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 10,
+    paddingVertical: spacing.md,
+    flexWrap: 'wrap',
   },
-  statBox: { alignItems: 'center' },
-  statNumber: { fontSize: 18, fontWeight: 'bold' },
-  statLabel: { fontSize: 14, color: '#777' },
+  statBox: { 
+    alignItems: 'center',
+    marginHorizontal: spacing.sm,
+    minWidth: '30%'
+  },
+  statNumber: { 
+    fontSize: fontSizes.lg, 
+    fontWeight: 'bold' 
+  },
+  statLabel: { 
+    fontSize: fontSizes.sm, 
+    color: '#777',
+    marginTop: spacing.xs
+  },
 
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 15,
+    paddingVertical: spacing.md,
     borderTopWidth: 0.5,
     borderTopColor: '#eee',
   },
-  itemText: { fontSize: 16, color: '#333' },
+  itemText: { 
+    fontSize: fontSizes.base, 
+    color: '#333',
+    marginLeft: spacing.md
+  },
 });
