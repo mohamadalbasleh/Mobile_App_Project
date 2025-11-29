@@ -2,20 +2,23 @@
 // This file is only for Firebase configuration and export of "auth".
 
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Take these values from Firebase console (Project settings)
 const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY_HERE',
-  authDomain: 'YOUR_AUTH_DOMAIN_HERE',
-  projectId: 'YOUR_PROJECT_ID_HERE',
-  storageBucket: 'YOUR_STORAGE_BUCKET_HERE',
-  messagingSenderId: 'YOUR_SENDER_ID_HERE',
-  appId: 'YOUR_APP_ID_HERE',
+  apiKey: 'AIzaSyD0eSwmSauqUyOrXgysxa2YdJuZsPEvpYA',
+  authDomain: 'mobileapp-e1010.firebaseapp.com',
+  projectId: 'mobileapp-e1010',
+  storageBucket: 'mobileapp-e1010.firebasestorage.app',
+  messagingSenderId: '549806558174',
+  appId: '1:549806558174:web:57674edf8a7c8f3a932b4f',
 };
 
 // Initialize Firebase app only once
 const app = initializeApp(firebaseConfig);
 
-// Export auth object so we can use it in screens
-export const auth = getAuth(app);
+// Initialize Auth with AsyncStorage persistence for React Native
+export const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
