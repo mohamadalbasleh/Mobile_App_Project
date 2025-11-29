@@ -1,8 +1,9 @@
 // Config.js
-// This file is only for Firebase configuration and export of "auth".
+// This file is only for Firebase configuration and export of "auth" and "db".
 
 import { initializeApp } from 'firebase/app';
 import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Take these values from Firebase console (Project settings)
@@ -22,3 +23,6 @@ const app = initializeApp(firebaseConfig);
 export const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
 });
+
+// Initialize Firestore
+export const db = getFirestore(app);

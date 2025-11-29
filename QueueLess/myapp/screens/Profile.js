@@ -1,5 +1,5 @@
 // screens/Profile.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,12 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { auth, db } from '../Config';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 
 function RowItem({ title, note, onPress, icon }) {
   return (
@@ -45,46 +49,149 @@ function SwitchItem({ title, value, onToggle, icon }) {
   );
 }
 
-export default function Profile({ navigation, auth }) {
+export default function Profile({ navigation }) {
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
 
-  const handleLogout = () => {
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  async function fetchUserData() {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        setUserData(userDoc.data());
+      } else {
+        // Fallback if user doc doesn't exist
+        setUserData({
+          firstName: user.displayName?.split(' ')[0] || 'User',
+          lastName: user.displayName?.split(' ')[1] || '',
+          displayName: user.displayName || 'User',
+          email: user.email,
+          studentId: 'N/A',
+          totalOrders: 0,
+          walletBalance: 0,
+          rating: 5.0,
+        });
+      }
+    } catch (error) {
+      console.log('Error fetching user data:', error);
+      Alert.alert('Error', 'Could not load profile data');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleLogout() {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
       { text: 'Cancel', onPress: () => {} },
       {
         text: 'Logout',
-        onPress: () => {
-          // Firebase logout logic would go here
-          navigation.replace('Login');
+        onPress: async () => {
+          try {
+            await signOut(auth);
+            navigation.replace('Login');
+          } catch (error) {
+            Alert.alert('Error', 'Failed to logout: ' + error.message);
+          }
         },
       },
     ]);
-  };
+  }
+
+  function handleEditProfile() {
+    Alert.prompt(
+      'Edit First Name',
+      'Update your first name',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => {},
+          style: 'cancel',
+        },
+        {
+          text: 'Save',
+          onPress: (newFirstName) => {
+            if (newFirstName.trim()) {
+              updateUserName(newFirstName, userData.lastName);
+            }
+          },
+        },
+      ],
+      'plain-text',
+      userData?.firstName
+    );
+  }
+
+  async function updateUserName(firstName, lastName) {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          firstName: firstName,
+          displayName: `${firstName} ${lastName}`,
+        });
+        fetchUserData();
+        Alert.alert('Success', 'Profile updated!');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update profile');
+    }
+  }
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#276EF1" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const initials = (
+    (userData?.firstName?.charAt(0) || 'U') +
+    (userData?.lastName?.charAt(0) || '')
+  ).toUpperCase();
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Blue header with user info */}
+        {/* Header with user info */}
         <View style={styles.header}>
           <View style={styles.avatarCircle}>
-            <Text style={styles.avatarText}>JD</Text>
+            <Text style={styles.avatarText}>{initials}</Text>
           </View>
-          <Text style={styles.name}>John Doe</Text>
-          <Text style={styles.email}>john.doe@university.edu</Text>
-          <Text style={styles.studentId}>Student ID: 2024-12345</Text>
+          <Text style={styles.name}>{userData?.displayName || 'User'}</Text>
+          <Text style={styles.email}>{userData?.email}</Text>
+          <Text style={styles.studentId}>
+            Student ID: {userData?.studentId || 'N/A'}
+          </Text>
 
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
-              <Text style={styles.statValue}>12</Text>
+              <Text style={styles.statValue}>{userData?.totalOrders || 0}</Text>
               <Text style={styles.statLabel}>Orders</Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={styles.statValue}>QAR 285</Text>
-              <Text style={styles.statLabel}>Spent</Text>
+              <Text style={styles.statValue}>
+                QAR {userData?.walletBalance || 0}
+              </Text>
+              <Text style={styles.statLabel}>Balance</Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={styles.statValue}>4.8</Text>
+              <Text style={styles.statValue}>
+                {userData?.rating?.toFixed(1) || '5.0'}
+              </Text>
               <Text style={styles.statLabel}>Rating</Text>
             </View>
           </View>
@@ -96,19 +203,23 @@ export default function Profile({ navigation, auth }) {
           <Text style={styles.sectionLabel}>💳 Payment</Text>
           <RowItem
             title="Saved Cards"
-            note="1 card on file"
+            note="Manage your cards"
             icon="💳"
-            onPress={() => Alert.alert('Saved Cards', 'View and manage your payment cards')}
+            onPress={() =>
+              Alert.alert('Saved Cards', 'View and manage your payment cards')
+            }
           />
           <RowItem
             title="Wallet Balance"
-            note="QAR 250.00"
+            note={`QAR ${userData?.walletBalance || 0}`}
             icon="📱"
-            onPress={() => Alert.alert('Wallet', 'View your university account balance')}
+            onPress={() =>
+              Alert.alert('Wallet', 'View your university account balance')
+            }
           />
           <RowItem
             title="Transaction History"
-            note="View all payments"
+            note={`${userData?.totalOrders || 0} transactions`}
             icon="📋"
             onPress={() => Alert.alert('History', 'Transaction history')}
           />
@@ -117,21 +228,25 @@ export default function Profile({ navigation, auth }) {
           <Text style={styles.sectionLabel}>👤 Account</Text>
           <RowItem
             title="Personal Information"
-            note="Edit profile details"
+            note={`${userData?.firstName || ''} ${userData?.lastName || ''}`}
             icon="👤"
-            onPress={() => Alert.alert('Profile', 'Edit your personal information')}
+            onPress={handleEditProfile}
           />
           <RowItem
             title="Saved Locations"
-            note="2 saved locations"
+            note="Manage your locations"
             icon="📍"
-            onPress={() => Alert.alert('Locations', 'Manage your saved locations')}
+            onPress={() =>
+              Alert.alert('Locations', 'Manage your saved locations')
+            }
           />
           <RowItem
             title="Dietary Preferences"
-            note="Vegetarian, Gluten-free"
+            note="Update your preferences"
             icon="🥗"
-            onPress={() => Alert.alert('Preferences', 'Update your dietary preferences')}
+            onPress={() =>
+              Alert.alert('Preferences', 'Update your dietary preferences')
+            }
           />
 
           {/* Preferences Section */}
@@ -173,7 +288,12 @@ export default function Profile({ navigation, auth }) {
             title="About QueueLess"
             note="Version 1.0.0"
             icon="ℹ️"
-            onPress={() => Alert.alert('About', 'QueueLess v1.0.0 - Skip the line, save time')}
+            onPress={() =>
+              Alert.alert(
+                'About',
+                'QueueLess v1.0.0 - Skip the line, save time'
+              )
+            }
           />
 
           {/* Logout */}
@@ -200,6 +320,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F7FB',
+  },
   header: {
     backgroundColor: '#276EF1',
     paddingTop: 20,
@@ -217,16 +343,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 6,
+    elevation: 4,
   },
   avatarText: {
     color: '#FFFFFF',
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   name: {
     color: '#FFFFFF',
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '800',
     marginBottom: 2,
   },
   email: {
@@ -253,7 +384,7 @@ const styles = StyleSheet.create({
   statValue: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   statLabel: {
     color: '#E0E6FF',
@@ -266,15 +397,15 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   sectionLabel: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
     color: '#1F2430',
-    marginTop: 16,
+    marginTop: 18,
     marginBottom: 10,
   },
   rowItem: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 14,
     marginBottom: 8,
@@ -282,10 +413,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.06,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
-    elevation: 1,
+    elevation: 2,
   },
   rowContent: {
     flexDirection: 'row',
@@ -301,13 +432,13 @@ const styles = StyleSheet.create({
   },
   rowTitle: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#1F2430',
   },
   rowNote: {
     fontSize: 12,
     color: '#7A7F8C',
-    marginTop: 2,
+    marginTop: 4,
   },
   rowArrow: {
     fontSize: 18,
@@ -316,20 +447,26 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     backgroundColor: '#FF6B6B',
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 24,
     marginBottom: 16,
+    shadowColor: '#FF6B6B',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 6,
+    elevation: 3,
   },
   logoutText: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
   },
   versionText: {
     textAlign: 'center',
     fontSize: 12,
     color: '#9BA3B4',
+    marginBottom: 8,
   },
 });

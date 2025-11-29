@@ -30,7 +30,7 @@ export default function VendorDetails({ route, addToCart }) {
       <Text style={styles.vendorName}>{vendor.name}</Text>
       <Text style={styles.vendorType}>{vendor.type}</Text>
       <Text style={styles.meta}>
-        ⏱ {vendor.time} • ★ {vendor.rating.toFixed(1)}
+        {vendor.time} • ★ {vendor.rating.toFixed(1)}
       </Text>
 
       <Text style={styles.menuTitle}>Menu</Text>

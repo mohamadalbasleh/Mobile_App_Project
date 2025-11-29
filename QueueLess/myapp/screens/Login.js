@@ -56,7 +56,7 @@ export default function Login({ navigation }) {
           <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
-            placeholder="your.email@university.edu"
+            placeholder="60xxxxxx@udst.edu.qa"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -98,12 +98,6 @@ export default function Login({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.demoBox}>
-          <Text style={styles.demoTitle}>Demo Mode</Text>
-          <Text style={styles.demoSubtitle}>
-            Use your Firebase account to continue
-          </Text>
-        </View>
 
         <Text style={styles.footerCopy}>
           © 2025 Campus Queue. All rights reserved.
