@@ -1,5 +1,5 @@
 // screens/Home.js
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,42 +7,36 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
+  FlatList,
 } from 'react-native';
+import { VENDORS } from '../data/vendors';
 
-const CATEGORIES = ['All', 'Coffee', 'Fast Food', 'Healthy', 'Pizza'];
+const CATEGORIES = ['All', 'Fast Food', 'Pizza', 'Japanese', 'Mexican', 'Indian'];
 
-const VENDORS = [
-  {
-    id: '1',
-    name: 'Campus Coffee Bar',
-    type: 'Coffee & Pastries',
-    time: '5–10 min',
-    rating: '4.8',
-  },
-  {
-    id: '2',
-    name: 'The Burger Joint',
-    type: 'Fast Food',
-    time: '10–15 min',
-    rating: '4.6',
-  },
-  {
-    id: '3',
-    name: 'Fresh Salad Co.',
-    type: 'Healthy',
-    time: '8–12 min',
-    rating: '4.7',
-  },
-  {
-    id: '4',
-    name: 'Pizza Paradise',
-    type: 'Pizza & Italian',
-    time: '12–18 min',
-    rating: '4.5',
-  },
-];
+export default function Home({ navigation }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
-export default function Home() {
+  // Filter vendors based on search and category
+  const filteredVendors = VENDORS.filter((vendor) => {
+    const matchesSearch = 
+      searchQuery === '' ||
+      vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      vendor.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      vendor.items.some(item => 
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+    const matchesCategory =
+      selectedCategory === 'All' || vendor.type.includes(selectedCategory);
+
+    return matchesSearch && matchesCategory;
+  });
+
+  const handleVendorPress = (vendorId) => {
+    navigation.navigate('VendorDetails', { vendorId });
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -52,12 +46,15 @@ export default function Home() {
           <Text style={styles.headerTitle}>Order Your Meal</Text>
 
           <TouchableOpacity style={styles.locationChip}>
-            <Text style={styles.locationText}>Main Campus</Text>
+            <Text style={styles.locationText}>📍 Main Campus</Text>
           </TouchableOpacity>
 
           <TextInput
             style={styles.searchInput}
             placeholder="Search for food or restaurants..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholderTextColor="#9BA3B4"
           />
 
           {/* Categories */}
@@ -66,15 +63,16 @@ export default function Home() {
             showsHorizontalScrollIndicator={false}
             style={styles.categoryRow}
           >
-            {CATEGORIES.map((cat, index) => {
-              const isActive = index === 0; // "All" active
+            {CATEGORIES.map((cat) => {
+              const isActive = cat === selectedCategory;
               return (
-                <View
+                <TouchableOpacity
                   key={cat}
                   style={[
                     styles.categoryChip,
                     isActive && styles.categoryChipActive,
                   ]}
+                  onPress={() => setSelectedCategory(cat)}
                 >
                   <Text
                     style={[
@@ -84,41 +82,60 @@ export default function Home() {
                   >
                     {cat}
                   </Text>
-                </View>
+                </TouchableOpacity>
               );
             })}
           </ScrollView>
         </View>
 
-        {/* Popular Now */}
+        {/* Results Section */}
         <View style={styles.body}>
-          <Text style={styles.sectionTitle}>Popular Now</Text>
+          <View style={styles.resultsHeader}>
+            <Text style={styles.sectionTitle}>
+              {searchQuery ? 'Search Results' : 'Popular Now'}
+            </Text>
+            <Text style={styles.resultCount}>{filteredVendors.length} found</Text>
+          </View>
 
-          {VENDORS.map((v) => (
-            <View key={v.id} style={styles.card}>
-              {/* Placeholder box for image */}
-              <View style={styles.imagePlaceholder}>
-                <Text style={styles.imageText}>Photo</Text>
-              </View>
+          {filteredVendors.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyIcon}>🔍</Text>
+              <Text style={styles.emptyTitle}>No vendors found</Text>
+              <Text style={styles.emptySubtitle}>
+                Try adjusting your search or filters
+              </Text>
+            </View>
+          ) : (
+            filteredVendors.map((v) => (
+              <TouchableOpacity
+                key={v.id}
+                style={styles.card}
+                onPress={() => handleVendorPress(v.id)}
+              >
+                {/* Placeholder box for image */}
+                <View style={styles.imagePlaceholder}>
+                  <Text style={styles.imageText}>🍽️</Text>
+                </View>
 
-              <View style={styles.cardInfo}>
-                <Text style={styles.cardTitle}>{v.name}</Text>
-                <Text style={styles.cardSubtitle}>{v.type}</Text>
+                <View style={styles.cardInfo}>
+                  <Text style={styles.cardTitle}>{v.name}</Text>
+                  <Text style={styles.cardSubtitle}>{v.type}</Text>
 
-                <View style={styles.cardRow}>
-                  <Text style={styles.cardMeta}>⏱ {v.time}</Text>
-                  <View style={styles.statusChip}>
-                    <Text style={styles.statusText}>Open Now</Text>
+                  <View style={styles.cardRow}>
+                    <Text style={styles.cardMeta}>⏱ {v.time}</Text>
+                    <View style={styles.statusChip}>
+                      <Text style={styles.statusText}>Open</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
 
-              <View style={styles.ratingBadge}>
-                <Text style={styles.ratingStar}>★</Text>
-                <Text style={styles.ratingText}>{v.rating}</Text>
-              </View>
-            </View>
-          ))}
+                <View style={styles.ratingBadge}>
+                  <Text style={styles.ratingStar}>★</Text>
+                  <Text style={styles.ratingText}>{v.rating.toFixed(1)}</Text>
+                </View>
+              </TouchableOpacity>
+            ))
+          )}
         </View>
       </ScrollView>
     </View>
@@ -174,12 +191,11 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   categoryChip: {
-    backgroundColor: '#3F83FF',
+    backgroundColor: '#3F4A6E20',
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 20,
     marginRight: 8,
-    backgroundColor: '#3F4A6E20',
   },
   categoryChipActive: {
     backgroundColor: '#FFFFFF',
@@ -195,11 +211,21 @@ const styles = StyleSheet.create({
   body: {
     paddingHorizontal: 20,
     paddingTop: 16,
+    paddingBottom: 20,
+  },
+  resultsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
+  },
+  resultCount: {
+    fontSize: 13,
+    color: '#7A7F8C',
   },
   card: {
     flexDirection: 'row',
@@ -224,8 +250,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   imageText: {
-    fontSize: 12,
-    color: '#7A7F8C',
+    fontSize: 32,
   },
   cardInfo: {
     flex: 1,
@@ -268,5 +293,23 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#7A7F8C',
+    textAlign: 'center',
   },
 });

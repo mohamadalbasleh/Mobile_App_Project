@@ -12,6 +12,7 @@ import VendorDetails from './screens/VendorDetails';
 import Cart from './screens/Cart';
 import Orders from './screens/Orders';
 import Profile from './screens/Profile';
+import Payment from './screens/Payment';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -89,7 +90,7 @@ export default function App() {
           ? cartItems[0].vendorName
           : 'Multiple Vendors',
       pickupTime: '10:30 AM',
-      status: 'Ready for Pickup',
+      status: 'Confirmed',
     };
 
     setOrders((prev) => [order, ...prev]);
@@ -184,6 +185,16 @@ export default function App() {
         >
           {(stackProps) => (
             <VendorDetails {...stackProps} addToCart={addToCart} />
+          )}
+        </Stack.Screen>
+
+        {/* Payment Screen */}
+        <Stack.Screen
+          name="Payment"
+          options={{ title: 'Checkout' }}
+        >
+          {(stackProps) => (
+            <Payment {...stackProps} placeOrder={placeOrder} />
           )}
         </Stack.Screen>
       </Stack.Navigator>
