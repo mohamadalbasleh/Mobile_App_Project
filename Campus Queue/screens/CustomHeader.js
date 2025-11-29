@@ -1,5 +1,6 @@
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { RFValue, fontSizes, spacing } from '../utils/responsiveUtils';
+import { app, analytics } from '../config/firebase';
 
 const { width: windowWidth } = Dimensions.get('window');
 

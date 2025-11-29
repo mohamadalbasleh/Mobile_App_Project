@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, Dimensions } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { RFValue, fontSizes, spacing } from '../utils/responsiveUtils';
+import { app, analytics } from '../config/firebase';
 
 import FastFood from '../screens/FastFood';
 import Healthy from '../screens/Healthy';

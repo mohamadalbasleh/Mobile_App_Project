@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { RFValue, fontSizes, spacing } from '../utils/responsiveUtils';
+import { app, analytics } from '../config/firebase';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;

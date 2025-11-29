@@ -3,6 +3,8 @@ import { AntDesign } from '@expo/vector-icons';
 import { Feather } from "@expo/vector-icons";
 import { useEffect } from 'react';
 import { RFValue, fontSizes, spacing } from '../utils/responsiveUtils';
+import { app, analytics } from '../config/firebase';
+import { RFValue, fontSizes, spacing } from '../utils/responsiveUtils';
 
 
 const windowWidth = Dimensions.get('window').width

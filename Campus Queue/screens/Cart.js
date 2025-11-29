@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, Image
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
 import { RFValue, fontSizes, spacing } from '../utils/responsiveUtils';
+import { app, analytics } from '../config/firebase';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
