@@ -8,6 +8,8 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
+import { signOut } from "firebase/auth";
+import { auth } from "../Config";
 import { VENDORS } from "../data/vendors";
 
 export default function Profile({
@@ -37,11 +39,14 @@ export default function Profile({
       {
         text: "Logout",
         style: "destructive",
-        onPress: () =>
-          navigation.reset({
-            index: 0,
-            routes: [{ name: "Login" }],
-          }),
+        onPress: async () => {
+          try {
+            await signOut(auth);
+            navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+          } catch (error) {
+            Alert.alert("Error", "Failed to log out. Please try again.");
+          }
+        },
       },
     ]);
   }

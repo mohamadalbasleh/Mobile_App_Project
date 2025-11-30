@@ -13,6 +13,8 @@ import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../Config";
 export default function ResetPassword({ navigation }) {
   const [email, setEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   function handleCancel() {
@@ -22,27 +24,35 @@ export default function ResetPassword({ navigation }) {
   function handleReset() {
     const trimmedEmail = email.trim().toLowerCase();
 
-    if (!trimmedEmail) {
-      Alert.alert("Email required", "Please enter your UDST email.");
+    if (!trimmedEmail || !newPassword || !confirmPassword) {
+      Alert.alert("Missing fields", "Please fill in all fields.");
       return;
     }
 
-    const udstPattern = /^[0-9]{7}@udst\.edu\.qa$/i;
-    if (!udstPattern.test(trimmedEmail)) {
-      Alert.alert(
-        "Invalid email",
-        "Please use your UDST email (e.g., 60301414@udst.edu.qa)."
-      );
+    if (newPassword.length < 6) {
+      Alert.alert("Weak password", "New password must be at least 6 characters.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      Alert.alert("Password mismatch", "New passwords do not match.");
+      return;
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(trimmedEmail)) {
+      Alert.alert("Invalid email", "Please enter a valid email address.");
       return;
     }
 
     setLoading(true);
+
     sendPasswordResetEmail(auth, trimmedEmail)
       .then(() => {
         setLoading(false);
         Alert.alert(
           "Reset link sent",
-          "Check your UDST email for a password reset link.",
+          "A password reset link has been sent to your email. Click it to set your new password.",
           [{ text: "OK", onPress: () => navigation.goBack() }]
         );
       })
@@ -69,20 +79,17 @@ export default function ResetPassword({ navigation }) {
         <View style={styles.card}>
           <Text style={styles.icon}>🔒</Text>
           <Text style={styles.cardText}>
-            Enter your UDST email and we will send you a reset link.
+            Enter your email to receive a password reset link.
           </Text>
         </View>
 
         <View style={styles.form}>
-          <Text style={styles.label}>UDST Email</Text>
+          <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
-            placeholder="60xxxxxx@udst.edu.qa"
+            placeholder="example@university.edu"
             placeholderTextColor="#9CA3AF"
             keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            textContentType="username"
             value={email}
             onChangeText={setEmail}
           />

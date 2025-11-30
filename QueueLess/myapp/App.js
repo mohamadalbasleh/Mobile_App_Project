@@ -4,6 +4,9 @@
   import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
   import { Ionicons } from "@expo/vector-icons";
   import { VENDORS } from "./data/vendors";
+  import { auth, db } from "./Config";
+  import { onAuthStateChanged } from "firebase/auth";
+  import { doc, getDoc } from "firebase/firestore";
   import Login from "./screens/Login";
   import SignUp from "./screens/SignUp";
   import ResetPassword from "./screens/ResetPassword";
@@ -21,11 +24,44 @@
     const [cartItems, setCartItems] = useState([]);
     const [orders, setOrders] = useState([]);
     const [favoriteVendors, setFavoriteVendors] = useState([]);
-    const [user] = useState({
-      name: "Sulistiantoo P",
-      email: "60301414@udst.edu.qa",
-      studentId: "60301414",
-    });
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    React.useEffect(() => {
+      const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+        if (currentUser) {
+          try {
+            const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              setUser({
+                name: userData.displayName || currentUser.displayName || "Campus User",
+                email: userData.email || currentUser.email || "student@example.com",
+                studentId: userData.studentId || "0000000",
+              });
+            } else {
+              setUser({
+                name: currentUser.displayName || "Campus User",
+                email: currentUser.email || "student@example.com",
+                studentId: "0000000",
+              });
+            }
+          } catch (error) {
+            console.error("Error fetching user data:", error);
+            setUser({
+              name: currentUser.displayName || "Campus User",
+              email: currentUser.email || "student@example.com",
+              studentId: "0000000",
+            });
+          }
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+      });
+
+      return unsubscribe;
+    }, []);
 
     function addToCart(item, vendorName) {
       setCartItems((prev) => {
@@ -184,7 +220,7 @@
 
     return (
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Login">
+        <Stack.Navigator initialRouteName={user ? "MainTabs" : "Login"}>
           <Stack.Screen
             name="Login"
             component={Login}

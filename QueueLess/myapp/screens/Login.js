@@ -86,9 +86,7 @@ export default function Login({ navigation }) {
             placeholder="60xxxxxx@udst.edu.qa"
             placeholderTextColor="#9CA3AF"
             keyboardType="email-address"
-            autoCapitalize="none"
             autoCorrect={false}
-            textContentType="username"
             value={email}
             onChangeText={setEmail}
           />
@@ -99,8 +97,6 @@ export default function Login({ navigation }) {
             placeholder="Enter your password"
             placeholderTextColor="#9CA3AF"
             secureTextEntry
-            autoCapitalize="none"
-            textContentType="password"
             value={password}
             onChangeText={setPassword}
           />

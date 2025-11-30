@@ -41,7 +41,6 @@ export default function SignUp({ navigation }) {
 
     try {
       setLoading(true);
-      // Create user account
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email.trim(),
@@ -51,12 +50,10 @@ export default function SignUp({ navigation }) {
       const user = userCredential.user;
       const displayName = `${firstName} ${lastName}`;
 
-      // Update Firebase Auth display name
       await updateProfile(user, {
         displayName: displayName,
       });
 
-      // Save additional user info to Firestore
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         firstName: firstName,
@@ -101,7 +98,7 @@ export default function SignUp({ navigation }) {
               placeholder="John"
               value={firstName}
               onChangeText={setFirstName}
-              autoCapitalize="words"
+              autoComplete="off"
             />
           </View>
           <View style={styles.nameField}>
@@ -111,7 +108,7 @@ export default function SignUp({ navigation }) {
               placeholder="Doe"
               value={lastName}
               onChangeText={setLastName}
-              autoCapitalize="words"
+              autoComplete="off"
             />
           </View>
         </View>
@@ -123,7 +120,6 @@ export default function SignUp({ navigation }) {
             placeholder="YYYY-XXXXX"
             value={studentId}
             onChangeText={setStudentId}
-            autoCapitalize="none"
           />
         </View>
 
@@ -134,7 +130,6 @@ export default function SignUp({ navigation }) {
             placeholder="example@university.edu"
             value={email}
             onChangeText={setEmail}
-            autoCapitalize="none"
             keyboardType="email-address"
           />
         </View>

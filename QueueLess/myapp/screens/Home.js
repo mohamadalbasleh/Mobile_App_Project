@@ -78,9 +78,6 @@ export default function Home({ navigation }) {
               Order ahead and skip the cafeteria line
             </Text>
           </View>
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarText}>SP</Text>
-          </View>
         </View>
 
         <View style={styles.categoryRow}>

@@ -17,9 +17,7 @@ export default function Cart({
   getCartTotal,
 }) {
   const subtotal = getCartTotal();
-  const deliveryFee = subtotal > 0 ? 5 : 0;
-  const tax = subtotal * 0.05;
-  const total = subtotal + deliveryFee + tax;
+  const total = subtotal;
 
   const itemsCount = cartItems.reduce(
     (sum, item) => sum + item.quantity,
@@ -156,14 +154,7 @@ export default function Cart({
               <Text style={styles.label}>Subtotal</Text>
               <Text style={styles.value}>QAR {subtotal.toFixed(2)}</Text>
             </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Delivery Fee</Text>
-              <Text style={styles.value}>QAR {deliveryFee.toFixed(2)}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Tax (5%)</Text>
-              <Text style={styles.value}>QAR {tax.toFixed(2)}</Text>
-            </View>
+            {/* delivery fee and tax removed */}
 
             <View style={styles.divider} />
 
