@@ -9,7 +9,6 @@
   import { doc, getDoc } from "firebase/firestore";
   import Login from "./screens/Login";
   import SignUp from "./screens/SignUp";
-  import ResetPassword from "./screens/ResetPassword";
   import Home from "./screens/Home";
   import VendorDetails from "./screens/VendorDetails";
   import Cart from "./screens/Cart";
@@ -230,11 +229,6 @@
             name="SignUp"
             component={SignUp}
             options={{ title: "Create Account" }}
-          />
-          <Stack.Screen
-            name="ResetPassword"
-            component={ResetPassword}
-            options={{ headerShown: false }}
           />
           <Stack.Screen name="MainTabs" options={{ headerShown: false }}>
             {(stackProps) => <MainTabs {...stackProps} {...sharedProps} />}

@@ -59,10 +59,6 @@ export default function Login({ navigation }) {
       });
   }
 
-  function handleForgotPassword() {
-    navigation.navigate("ResetPassword");
-  }
-
   function handleSignUp() {
     navigation.navigate("SignUp");
   }
@@ -100,13 +96,6 @@ export default function Login({ navigation }) {
             value={password}
             onChangeText={setPassword}
           />
-
-          <TouchableOpacity
-            onPress={handleForgotPassword}
-            style={styles.forgotLink}
-          >
-            <Text style={styles.forgotText}>Forgot password?</Text>
-          </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.signInButton, loading && { opacity: 0.7 }]}
