@@ -6,7 +6,7 @@
   import { VENDORS } from "./data/vendors";
   import { auth, db } from "./Config";
   import { onAuthStateChanged } from "firebase/auth";
-  import { doc, getDoc } from "firebase/firestore";
+  import { doc, getDoc, setDoc } from "firebase/firestore";
   import Login from "./screens/Login";
   import SignUp from "./screens/SignUp";
   import Home from "./screens/Home";
@@ -45,6 +45,17 @@
                 studentId: "0000000",
               });
             }
+            
+            try {
+              const ordersSnapshot = await getDoc(doc(db, "orders", currentUser.uid));
+              if (ordersSnapshot.exists()) {
+                setOrders(ordersSnapshot.data().orders || []);
+              } else {
+                setOrders([]);
+              }
+            } catch (ordersError) {
+              setOrders([]);
+            }
           } catch (error) {
             console.error("Error fetching user data:", error);
             setUser({
@@ -52,9 +63,11 @@
               email: currentUser.email || "student@example.com",
               studentId: "0000000",
             });
+            setOrders([]);
           }
         } else {
           setUser(null);
+          setOrders([]);
         }
         setLoading(false);
       });
@@ -137,8 +150,16 @@
         createdAt: new Date().toISOString(),
       };
 
-      setOrders((prev) => [newOrder, ...prev]);
+      const updatedOrders = [newOrder, ...orders];
+      setOrders(updatedOrders);
       setCartItems([]);
+      
+      if (auth.currentUser) {
+        setDoc(doc(db, "orders", auth.currentUser.uid), {
+          orders: updatedOrders,
+        });
+      }
+      
       return newOrder;
     }
 

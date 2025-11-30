@@ -85,6 +85,7 @@ export default function Login({ navigation }) {
             autoCorrect={false}
             value={email}
             onChangeText={setEmail}
+            textContentType="none"
           />
 
           <Text style={[styles.label, { marginTop: 16 }]}>Password</Text>
@@ -95,6 +96,7 @@ export default function Login({ navigation }) {
             secureTextEntry
             value={password}
             onChangeText={setPassword}
+            textContentType="none"
           />
 
           <TouchableOpacity

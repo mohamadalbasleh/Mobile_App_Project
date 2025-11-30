@@ -69,6 +69,14 @@ export default function SignUp({ navigation }) {
         createdAt: new Date().toISOString(),
       });
 
+      try {
+        await setDoc(doc(db, 'orders', user.uid), {
+          orders: [],
+        });
+      } catch (ordersError) {
+        console.log('Warning: Could not create orders document', ordersError);
+      }
+
       Alert.alert('Account created successfully!', 'Welcome to QueueLess!', [
         {
           text: 'OK',
@@ -98,7 +106,7 @@ export default function SignUp({ navigation }) {
               placeholder="John"
               value={firstName}
               onChangeText={setFirstName}
-              autoComplete="off"
+              textContentType="none"
             />
           </View>
           <View style={styles.nameField}>
@@ -108,7 +116,7 @@ export default function SignUp({ navigation }) {
               placeholder="Doe"
               value={lastName}
               onChangeText={setLastName}
-              autoComplete="off"
+              textContentType="none"
             />
           </View>
         </View>
@@ -120,6 +128,7 @@ export default function SignUp({ navigation }) {
             placeholder="YYYY-XXXXX"
             value={studentId}
             onChangeText={setStudentId}
+            textContentType="none"
           />
         </View>
 
@@ -131,6 +140,7 @@ export default function SignUp({ navigation }) {
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
+            textContentType="none"
           />
         </View>
 
@@ -142,6 +152,7 @@ export default function SignUp({ navigation }) {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            textContentType="none"
           />
         </View>
 
@@ -153,6 +164,7 @@ export default function SignUp({ navigation }) {
             value={confirm}
             onChangeText={setConfirm}
             secureTextEntry
+            textContentType="none"
           />
         </View>
 
