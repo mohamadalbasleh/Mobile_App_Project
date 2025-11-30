@@ -1,75 +1,104 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  TextInput,
-  ScrollView,
   TouchableOpacity,
+  FlatList,
   Image,
-  Dimensions,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { VENDORS } from "../data/vendors";
-
-const { width, height } = Dimensions.get('window');
-const CATEGORIES = ['All', 'Cafe', 'Coffee', 'Food', 'Snacks', 'Drinks'];
 
 export default function Home({ navigation }) {
   const [activeCategory, setActiveCategory] = useState("All");
 
-  function openVendor(vendorId) {
-    navigation.navigate("VendorDetails", { vendorId });
-  }
+  const categories = ["All", "Cafe", "Food & Drinks"];
 
-  const filteredVendors =
-  activeCategory === 'All'
-    ? VENDORS
-    : VENDORS.filter(
-        (v) => v.categoryTag === activeCategory
-      );
+  const filteredVendors = useMemo(() => {
+    if (activeCategory === "All") return VENDORS;
+    if (activeCategory === "Cafe") {
+      return VENDORS.filter((v) => v.categoryTag === "Cafe");
+    }
+    if (activeCategory === "Food & Drinks") {
+      return VENDORS.filter((v) => v.categoryTag === "Food & Drinks");
+    }
+    return VENDORS;
+  }, [activeCategory]);
 
-  return (
-    <View style={styles.container}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+  function renderVendor({ item }) {
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.9}
+        onPress={() =>
+          navigation.navigate("VendorDetails", { vendorId: item.id })
+        }
       >
-        {/* HEADER */}
-        <View style={styles.header}>
-          <Text style={styles.headerWelcome}>Welcome back 👋</Text>
-          <Text style={styles.headerTitle}>Order Your Meal</Text>
-
-          <View style={styles.locationRow}>
-            <View style={styles.locationPill}>
-              <Text style={styles.locationPin}>📍</Text>
-              <Text style={styles.locationText}>Main Campus</Text>
-            </View>
+        <View style={styles.cardRow}>
+          <View style={styles.cardImageWrapper}>
+            {item.image ? (
+              <Image source={item.image} style={styles.cardImage} />
+            ) : (
+              <View style={styles.cardImagePlaceholder}>
+                <Text style={styles.cardImageText}>☕️</Text>
+              </View>
+            )}
           </View>
 
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search for food or restaurants..."
-            placeholderTextColor="#C7CED9"
-          />
+          <View style={styles.cardInfo}>
+            <Text style={styles.vendorName}>{item.name}</Text>
+            <Text style={styles.vendorType}>{item.type}</Text>
+            <View style={styles.metaRow}>
+              <View style={styles.metaChip}>
+                <Ionicons name="time-outline" size={12} color="#4B5563" />
+                <Text style={styles.metaText}>{item.time}</Text>
+              </View>
+              <View style={styles.metaChip}>
+                <Ionicons name="star" size={12} color="#F59E0B" />
+                <Text style={styles.metaText}>
+                  {item.rating ? item.rating.toFixed(1) : "4.5"}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  }
 
-          {/* CATEGORY CHIPS (now clickable) */}
-          <ScrollView
+  return (
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>UDST QueueLess</Text>
+            <Text style={styles.subtitle}>
+              Order ahead and skip the cafeteria line
+            </Text>
+          </View>
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarText}>SP</Text>
+          </View>
+        </View>
+
+        <View style={styles.categoryRow}>
+          <FlatList
+            data={categories}
             horizontal
+            keyExtractor={(item) => item}
             showsHorizontalScrollIndicator={false}
-            style={styles.categoryRow}
-            contentContainerStyle={{ paddingRight: 6 }}
-          >
-            {CATEGORIES.map((cat) => {
-              const isActive = cat === activeCategory;
+            contentContainerStyle={styles.categoryListContent}
+            renderItem={({ item }) => {
+              const isActive = item === activeCategory;
               return (
                 <TouchableOpacity
-                  key={cat}
+                  onPress={() => setActiveCategory(item)}
                   style={[
                     styles.categoryChip,
                     isActive && styles.categoryChipActive,
                   ]}
-                  onPress={() => setActiveCategory(cat)}
-                  activeOpacity={0.9}
                 >
                   <Text
                     style={[
@@ -77,223 +106,186 @@ export default function Home({ navigation }) {
                       isActive && styles.categoryTextActive,
                     ]}
                   >
-                    {cat}
+                    {item}
                   </Text>
                 </TouchableOpacity>
               );
-            })}
-          </ScrollView>
+            }}
+          />
         </View>
 
-        {/* BODY */}
-        <View style={styles.body}>
-          <View style={styles.popularRow}>
-            <Text style={styles.sectionTitle}>Popular Now</Text>
-            <Text style={styles.foundText}>{filteredVendors.length} found</Text>
-          </View>
-
-          {filteredVendors.map((v) => (
-            <TouchableOpacity
-              key={v.id}
-              style={styles.card}
-              activeOpacity={0.85}
-              onPress={() => openVendor(v.id)}
-            >
-              {v.image ? (
-                <Image source={v.image} style={styles.cardImage} />
-              ) : (
-                <View style={styles.imagePlaceholder}>
-                  <Text style={styles.imageText}>Photo</Text>
-                </View>
-              )}
-
-              <View style={styles.cardMiddle}>
-                <Text style={styles.cardTitle}>{v.name}</Text>
-                <Text style={styles.cardSubtitle}>{v.type}</Text>
-
-                <View style={styles.cardBottomRow}>
-                  <Text style={styles.timeText}>⏱ {v.time}</Text>
-                  <View style={styles.openPill}>
-                    <Text style={styles.openText}>Open</Text>
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.ratingBox}>
-                <Text style={styles.star}>★</Text>
-                <Text style={styles.ratingText}>
-                  {v.rating ? v.rating.toFixed(1) : "4.5"}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Campus vendors</Text>
+          <Text style={styles.sectionSubtitle}>
+            Showing {filteredVendors.length} places
+          </Text>
         </View>
-      </ScrollView>
-    </View>
+
+        <FlatList
+          data={filteredVendors}
+          keyExtractor={(item) => item.id}
+          renderItem={renderVendor}
+          contentContainerStyle={styles.listContent}
+        />
+      </View>
+    </SafeAreaView>
   );
 }
 
-const HEADER_HEIGHT = 260;
-
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: "#F5F7FB",
+  },
   container: {
     flex: 1,
-    backgroundColor: "#F4F6FB",
-  },
-  scrollContent: {
-    paddingBottom: 24,
   },
   header: {
-    height: HEADER_HEIGHT,
-    backgroundColor: "#2563EB",
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  headerWelcome: {
-    color: "#E5ECFF",
-    fontSize: 14,
-  },
-  headerTitle: {
-    color: "#FFFFFF",
-    fontSize: 26,
-    fontWeight: "700",
-    marginTop: 4,
-  },
-  locationRow: {
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  locationPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#1D4ED8",
-    borderRadius: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  locationPin: { fontSize: 13, marginRight: 4 },
-  locationText: { color: "#FFFFFF", fontSize: 13 },
-  searchInput: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 18,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 14,
-    marginTop: 6,
-  },
-  categoryRow: {
-    marginTop: 14,
-  },
-  categoryChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 18,
-    backgroundColor: "#1E40AF",
-    marginRight: 8,
-  },
-  categoryChipActive: {
-    backgroundColor: "#FFFFFF",
-  },
-  categoryText: {
-    fontSize: 13,
-    color: "#C7D2FE",
-  },
-  categoryTextActive: {
-    color: "#2563EB",
-    fontWeight: "600",
-  },
-
-  body: {
     paddingHorizontal: 20,
     paddingTop: 16,
-  },
-  popularRow: {
+    paddingBottom: 12,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
   },
-  sectionTitle: {
-    fontSize: 18,
+  greeting: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  subtitle: {
+    fontSize: 13,
+    color: "#6B7280",
+    marginTop: 4,
+    maxWidth: "80%",
+  },
+  avatarCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#2563EB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  avatarText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+  },
+  categoryRow: {
+    paddingHorizontal: 12,
+    paddingBottom: 4,
+  },
+  categoryListContent: {
+    paddingHorizontal: 8,
+  },
+  categoryChip: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#000000",
+    backgroundColor: "#000000",
+    marginRight: 8,
+  },
+  categoryChipActive: {
+    backgroundColor: "#111827",
+    borderColor: "#111827",
+  },
+  categoryText: {
+    fontSize: 13,
+    color: "#FFFFFF",
+  },
+  categoryTextActive: {
+    color: "#FFFFFF",
     fontWeight: "600",
   },
-  foundText: {
-    fontSize: 13,
-    color: "#9CA3AF",
+  sectionHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 4,
   },
-
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: "#9CA3AF",
+    marginTop: 2,
+  },
+  listContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+  },
   card: {
-    flexDirection: "row",
-    alignItems: "center",
     backgroundColor: "#FFFFFF",
-    borderRadius: 18,
-    padding: 12,
-    marginBottom: 12,
-    shadowColor: "#000",
+    borderRadius: 16,
+    padding: 10,
+    marginBottom: 10,
+    shadowColor: "#000000",
     shadowOpacity: 0.04,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 1,
   },
-  cardImage: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
-    marginRight: 12,
-    resizeMode: "cover",
-  },
-  imagePlaceholder: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
-    backgroundColor: "#E5E7EB",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  imageText: {
-    fontSize: 12,
-    color: "#6B7280",
-  },
-  cardMiddle: {
-    flex: 1,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  cardSubtitle: {
-    fontSize: 13,
-    color: "#6B7280",
-    marginTop: 2,
-    marginBottom: 4,
-  },
-  cardBottomRow: {
+  cardRow: {
     flexDirection: "row",
     alignItems: "center",
   },
-  timeText: {
-    fontSize: 12,
-    color: "#6B7280",
-    marginRight: 8,
-  },
-  openPill: {
-    backgroundColor: "#DCFCE7",
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  openText: {
-    fontSize: 11,
-    color: "#15803D",
-  },
-  ratingBox: {
-    alignItems: "flex-end",
+  cardImageWrapper: {
+    width: 64,
+    height: 64,
+    borderRadius: 14,
+    overflow: "hidden",
+    marginRight: 12,
+    backgroundColor: "#E5E7EB",
     justifyContent: "center",
+    alignItems: "center",
   },
-  star: { color: "#FBBF24", fontSize: 16 },
-  ratingText: { fontSize: 14, fontWeight: "600", marginTop: 2 },
+  cardImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  cardImagePlaceholder: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cardImageText: {
+    fontSize: 22,
+  },
+  cardInfo: {
+    flex: 1,
+  },
+  vendorName: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  vendorType: {
+    fontSize: 13,
+    color: "#6B7280",
+    marginTop: 2,
+  },
+  metaRow: {
+    flexDirection: "row",
+    marginTop: 8,
+  },
+  metaChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: "#F3F4F6",
+    marginRight: 6,
+  },
+  metaText: {
+    fontSize: 11,
+    color: "#4B5563",
+    marginLeft: 4,
+  },
 });

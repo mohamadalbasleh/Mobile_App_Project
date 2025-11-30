@@ -1,486 +1,250 @@
-import React, { useState, useEffect } from 'react';
+import React from "react";
 import {
+  SafeAreaView,
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
-  Switch,
+  ScrollView,
   Alert,
-  ActivityIndicator,
-  Dimensions,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { auth, db } from '../Config';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { signOut } from 'firebase/auth';
+} from "react-native";
+import { VENDORS } from "../data/vendors";
 
-const { width, height } = Dimensions.get('window');
+export default function Profile({
+  navigation,
+  user,
+  favoriteVendors = [],
+  ordersCount = 0,
+}) {
+  const name = user?.name || "Campus User";
+  const email = user?.email || "student@example.com";
+  const studentId = user?.studentId || "0000000";
+  const initials =
+    user?.name
+      ?.split(" ")
+      .filter((p) => p.length > 0)
+      .slice(0, 2)
+      .map((p) => p[0].toUpperCase())
+      .join("") || "CU";
 
-function RowItem({ title, note, onPress, icon }) {
-  return (
-    <TouchableOpacity style={styles.rowItem} onPress={onPress}>
-      <View style={styles.rowContent}>
-        {icon && <Text style={styles.rowIcon}>{icon}</Text>}
-        <View style={styles.rowText}>
-          <Text style={styles.rowTitle}>{title}</Text>
-          {note ? <Text style={styles.rowNote}>{note}</Text> : null}
-        </View>
-      </View>
-      <Text style={styles.rowArrow}>›</Text>
-    </TouchableOpacity>
+  const favoriteVendorObjects = VENDORS.filter((v) =>
+    favoriteVendors.includes(v.id)
   );
-}
 
-function SwitchItem({ title, value, onToggle, icon }) {
-  return (
-    <View style={styles.rowItem}>
-      <View style={styles.rowContent}>
-        {icon && <Text style={styles.rowIcon}>{icon}</Text>}
-        <View style={styles.rowText}>
-          <Text style={styles.rowTitle}>{title}</Text>
-        </View>
-      </View>
-      <Switch
-        value={value}
-        onValueChange={onToggle}
-        trackColor={{ false: '#E0E3EB', true: '#276EF1' }}
-        thumbColor="#FFFFFF"
-      />
-    </View>
-  );
-}
-
-export default function Profile({ navigation }) {
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [notifications, setNotifications] = useState(true);
-
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  async function fetchUserData() {
-    try {
-      const user = auth.currentUser;
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      if (userDoc.exists()) {
-        setUserData(userDoc.data());
-      } else {
-        // Fallback if user doc doesn't exist
-        setUserData({
-          firstName: user.displayName?.split(' ')[0] || 'User',
-          lastName: user.displayName?.split(' ')[1] || '',
-          displayName: user.displayName || 'User',
-          email: user.email,
-          studentId: 'N/A',
-          totalOrders: 0,
-          walletBalance: 0,
-          rating: 5.0,
-        });
-      }
-    } catch (error) {
-      console.log('Error fetching user data:', error);
-      Alert.alert('Error', 'Could not load profile data');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleLogout() {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', onPress: () => {} },
+  function handleLogout() {
+    Alert.alert("Logout", "Are you sure you want to log out?", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: 'Logout',
-        onPress: async () => {
-          try {
-            await signOut(auth);
-            navigation.replace('Login');
-          } catch (error) {
-            Alert.alert('Error', 'Failed to logout: ' + error.message);
-          }
-        },
+        text: "Logout",
+        style: "destructive",
+        onPress: () =>
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "Login" }],
+          }),
       },
     ]);
   }
 
-  function handleEditProfile() {
-    Alert.prompt(
-      'Edit First Name',
-      'Update your first name',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => {},
-          style: 'cancel',
-        },
-        {
-          text: 'Save',
-          onPress: (newFirstName) => {
-            if (newFirstName.trim()) {
-              updateUserName(newFirstName, userData.lastName);
-            }
-          },
-        },
-      ],
-      'plain-text',
-      userData?.firstName
-    );
-  }
-
-  async function updateUserName(firstName, lastName) {
-    try {
-      const user = auth.currentUser;
-      if (user) {
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, {
-          firstName: firstName,
-          displayName: `${firstName} ${lastName}`,
-        });
-        fetchUserData();
-        Alert.alert('Success', 'Profile updated!');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update profile');
-    }
-  }
-
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#276EF1" />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  const initials = (
-    (userData?.firstName?.charAt(0) || 'U') +
-    (userData?.lastName?.charAt(0) || '')
-  ).toUpperCase();
-
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Header with user info */}
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        bounces={false}
+      >
         <View style={styles.header}>
-          <View style={styles.avatarCircle}>
+          <View style={styles.avatar}>
             <Text style={styles.avatarText}>{initials}</Text>
           </View>
-          <Text style={styles.name}>{userData?.displayName || 'User'}</Text>
-          <Text style={styles.email}>{userData?.email}</Text>
-          <Text style={styles.studentId}>
-            Student ID: {userData?.studentId || 'N/A'}
-          </Text>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.email}>{email}</Text>
+          <Text style={styles.studentId}>Student ID: {studentId}</Text>
 
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
-              <Text style={styles.statValue}>{userData?.totalOrders || 0}</Text>
+              <Text style={styles.statValue}>{ordersCount}</Text>
               <Text style={styles.statLabel}>Orders</Text>
-            </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>
-                QAR {userData?.walletBalance || 0}
-              </Text>
-              <Text style={styles.statLabel}>Balance</Text>
-            </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>
-                {userData?.rating?.toFixed(1) || '5.0'}
-              </Text>
-              <Text style={styles.statLabel}>Rating</Text>
             </View>
           </View>
         </View>
 
-        {/* Body */}
-        <View style={styles.body}>
-          {/* Payment Section */}
-          <Text style={styles.sectionLabel}>💳 Payment</Text>
-          <RowItem
-            title="Saved Cards"
-            note="Manage your cards"
-            icon="💳"
-            onPress={() =>
-              Alert.alert('Saved Cards', 'View and manage your payment cards')
-            }
-          />
-          <RowItem
-            title="Wallet Balance"
-            note={`QAR ${userData?.walletBalance || 0}`}
-            icon="📱"
-            onPress={() =>
-              Alert.alert('Wallet', 'View your university account balance')
-            }
-          />
-          <RowItem
-            title="Transaction History"
-            note={`${userData?.totalOrders || 0} transactions`}
-            icon="📋"
-            onPress={() => Alert.alert('History', 'Transaction history')}
-          />
-
-          {/* Account Section */}
-          <Text style={styles.sectionLabel}>👤 Account</Text>
-          <RowItem
-            title="Personal Information"
-            note={`${userData?.firstName || ''} ${userData?.lastName || ''}`}
-            icon="👤"
-            onPress={handleEditProfile}
-          />
-          <RowItem
-            title="Saved Locations"
-            note="Manage your locations"
-            icon="📍"
-            onPress={() =>
-              Alert.alert('Locations', 'Manage your saved locations')
-            }
-          />
-          <RowItem
-            title="Dietary Preferences"
-            note="Update your preferences"
-            icon="🥗"
-            onPress={() =>
-              Alert.alert('Preferences', 'Update your dietary preferences')
-            }
-          />
-
-          {/* Preferences Section */}
-          <Text style={styles.sectionLabel}>⚙️ Preferences</Text>
-          <SwitchItem
-            title="Push Notifications"
-            icon="🔔"
-            value={notifications}
-            onToggle={setNotifications}
-          />
-          <SwitchItem
-            title="Order Updates"
-            icon="📲"
-            value={true}
-            onToggle={() => {}}
-          />
-          <SwitchItem
-            title="Marketing Emails"
-            icon="📧"
-            value={false}
-            onToggle={() => {}}
-          />
-
-          {/* Help Section */}
-          <Text style={styles.sectionLabel}>❓ Support</Text>
-          <RowItem
-            title="Help Center"
-            note="FAQ and guides"
-            icon="❓"
-            onPress={() => Alert.alert('Help', 'Visit our help center')}
-          />
-          <RowItem
-            title="Contact Us"
-            note="Chat or email support"
-            icon="💬"
-            onPress={() => Alert.alert('Contact', 'Contact our support team')}
-          />
-          <RowItem
-            title="About QueueLess"
-            note="Version 1.0.0"
-            icon="ℹ️"
-            onPress={() =>
-              Alert.alert(
-                'About',
-                'QueueLess v1.0.0 - Skip the line, save time'
-              )
-            }
-          />
-
-          {/* Logout */}
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={handleLogout}
-          >
-            <Text style={styles.logoutText}>🚪 Logout</Text>
-          </TouchableOpacity>
-
-          {/* Version */}
-          <Text style={styles.versionText}>QueueLess v1.0.0</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Favorite Cafes</Text>
+          {favoriteVendorObjects.length === 0 ? (
+            <Text style={styles.emptyText}>
+              You have no favorites yet. Tap the heart on a cafe to add it here.
+            </Text>
+          ) : (
+            <View style={styles.favoritesList}>
+              {favoriteVendorObjects.map((vendor) => (
+                <TouchableOpacity
+                  key={vendor.id}
+                  style={styles.favoriteCard}
+                  activeOpacity={0.8}
+                  onPress={() =>
+                    navigation.navigate("VendorDetails", { vendorId: vendor.id })
+                  }
+                >
+                  <View style={styles.favoriteIconCircle}>
+                    <Text style={styles.favoriteIconText}>☕️</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.favoriteName}>{vendor.name}</Text>
+                    <Text style={styles.favoriteMeta}>{vendor.type}</Text>
+                  </View>
+                  <Text style={styles.favoriteChevron}>›</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
+
+        <TouchableOpacity
+          style={styles.logoutButton}
+          activeOpacity={0.9}
+          onPress={handleLogout}
+        >
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const responsiveSizes = {
-  headerPadding: width * 0.05,
-  avatarSize: width * 0.2,
-  avatarRadius: width * 0.1,
-  nameFont: width * 0.055,
-  emailFont: width * 0.032,
-  labelFont: width * 0.04,
-  sectionFont: width * 0.038,
-  rowPadding: width * 0.04,
-};
-
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#F5F7FB',
+    backgroundColor: "#F5F7FB",
   },
   container: {
     flex: 1,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5F7FB',
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 24,
   },
   header: {
-    backgroundColor: '#276EF1',
-    paddingTop: height * 0.03,
-    paddingBottom: height * 0.03,
-    paddingHorizontal: responsiveSizes.headerPadding,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    alignItems: 'center',
+    backgroundColor: "#2563EB",
+    borderRadius: 24,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    marginBottom: 24,
   },
-  avatarCircle: {
-    width: responsiveSizes.avatarSize,
-    height: responsiveSizes.avatarSize,
-    borderRadius: responsiveSizes.avatarRadius,
-    backgroundColor: '#3F83FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: height * 0.015,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
-    elevation: 4,
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: "#1E40AF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
   },
   avatarText: {
-    color: '#FFFFFF',
-    fontSize: responsiveSizes.avatarSize * 0.4,
-    fontWeight: '800',
+    color: "#FFFFFF",
+    fontSize: 28,
+    fontWeight: "700",
   },
   name: {
-    color: '#FFFFFF',
-    fontSize: responsiveSizes.nameFont,
-    fontWeight: '800',
-    marginBottom: height * 0.005,
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 4,
   },
   email: {
-    color: '#E0E6FF',
-    fontSize: responsiveSizes.emailFont,
-    marginBottom: height * 0.005,
+    color: "#E5ECFF",
+    fontSize: 13,
   },
   studentId: {
-    color: '#E0E6FF',
-    fontSize: responsiveSizes.emailFont,
-    marginBottom: height * 0.02,
+    color: "#C7D2FE",
+    fontSize: 13,
+    marginTop: 2,
   },
   statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    backgroundColor: '#FFFFFF20',
-    borderRadius: 16,
-    paddingVertical: height * 0.015,
+    flexDirection: "row",
+    marginTop: 18,
   },
   statBox: {
-    alignItems: 'center',
+    flex: 1,
+    backgroundColor: "#1D4ED8",
+    borderRadius: 16,
+    paddingVertical: 10,
+    alignItems: "center",
   },
   statValue: {
-    color: '#FFFFFF',
-    fontSize: width * 0.045,
-    fontWeight: '800',
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "700",
   },
   statLabel: {
-    color: '#E0E6FF',
-    fontSize: width * 0.028,
-    marginTop: height * 0.005,
+    color: "#DBEAFE",
+    fontSize: 12,
+    marginTop: 2,
   },
-  body: {
-    paddingHorizontal: responsiveSizes.rowPadding,
-    paddingTop: height * 0.02,
-    paddingBottom: height * 0.03,
+  section: {
+    marginBottom: 20,
   },
-  sectionLabel: {
-    fontSize: responsiveSizes.sectionFont,
-    fontWeight: '700',
-    color: '#1F2430',
-    marginTop: height * 0.025,
-    marginBottom: height * 0.015,
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: "#111827",
   },
-  rowItem: {
-    backgroundColor: '#FFFFFF',
+  emptyText: {
+    fontSize: 13,
+    color: "#6B7280",
+  },
+  favoritesList: {
+    gap: 10,
+  },
+  favoriteCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
     borderRadius: 14,
-    paddingVertical: height * 0.018,
-    paddingHorizontal: responsiveSizes.rowPadding,
-    marginBottom: height * 0.012,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
   },
-  rowContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+  favoriteIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#EEF2FF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
   },
-  rowIcon: {
-    fontSize: width * 0.05,
-    marginRight: width * 0.03,
+  favoriteIconText: {
+    fontSize: 20,
   },
-  rowText: {
-    flex: 1,
+  favoriteName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#111827",
   },
-  rowTitle: {
-    fontSize: responsiveSizes.labelFont,
-    fontWeight: '600',
-    color: '#1F2430',
+  favoriteMeta: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginTop: 2,
   },
-  rowNote: {
-    fontSize: responsiveSizes.emailFont,
-    color: '#7A7F8C',
-    marginTop: height * 0.006,
-  },
-  rowArrow: {
-    fontSize: width * 0.045,
-    color: '#7A7F8C',
-    marginLeft: width * 0.02,
+  favoriteChevron: {
+    fontSize: 20,
+    color: "#9CA3AF",
+    marginLeft: 8,
   },
   logoutButton: {
-    backgroundColor: '#FF6B6B',
-    borderRadius: 14,
-    paddingVertical: height * 0.02,
-    alignItems: 'center',
-    marginTop: height * 0.04,
-    marginBottom: height * 0.02,
-    shadowColor: '#FF6B6B',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
-    elevation: 3,
+    marginTop: 8,
+    backgroundColor: "#FEE2E2",
+    borderRadius: 20,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
   },
   logoutText: {
-    color: '#FFFFFF',
-    fontSize: responsiveSizes.labelFont,
-    fontWeight: '700',
-  },
-  versionText: {
-    textAlign: 'center',
-    fontSize: responsiveSizes.emailFont,
-    color: '#9BA3B4',
-    marginBottom: height * 0.01,
+    color: "#B91C1C",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });

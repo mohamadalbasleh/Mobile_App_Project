@@ -1,229 +1,235 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
+  StyleSheet,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Alert,
-  Dimensions,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../Config';
-
-const { width, height } = Dimensions.get('window');
+} from "react-native";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../Config";
 
 export default function Login({ navigation }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSignIn() {
-    if (!email || !password) {
-      Alert.alert('Missing fields', 'Please enter email and password.');
+  function handleLogin() {
+    const trimmedEmail = email.trim().toLowerCase();
+
+    if (!trimmedEmail || !password) {
+      Alert.alert("Missing fields", "Please enter both email and password.");
       return;
     }
 
-    try {
-      setLoading(true);
-      await signInWithEmailAndPassword(auth, email.trim(), password);
-      // If we reach here, login success → go to main app
-      navigation.replace('MainTabs');
-    } catch (error) {
-      console.log('Login error', error);
-      Alert.alert('Login failed', error.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function goToSignUp() {
-    navigation.navigate('SignUp');
-  }
-
-  async function handleForgotPassword() {
-    if (!email) {
-      Alert.alert('Email Required', 'Please enter your email address.');
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(trimmedEmail)) {
+      Alert.alert("Invalid email", "Please enter a valid email address.");
       return;
     }
 
-    navigation.navigate('ResetPassword', { email: email.trim() });
+    if (password.length < 6) {
+      Alert.alert("Weak password", "Password must be at least 6 characters.");
+      return;
+    }
+
+    setLoading(true);
+    signInWithEmailAndPassword(auth, trimmedEmail, password)
+      .then(() => {
+        setLoading(false);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "MainTabs" }],
+        });
+      })
+      .catch((error) => {
+        setLoading(false);
+        let message = "Unable to sign in. Please check your details.";
+        if (error.code === "auth/user-not-found") {
+          message = "No account found with this email.";
+        } else if (error.code === "auth/wrong-password") {
+          message = "Incorrect password.";
+        } else if (error.code === "auth/invalid-email") {
+          message = "Invalid email address.";
+        }
+        Alert.alert("Login failed", message);
+      });
+  }
+
+  function handleForgotPassword() {
+    navigation.navigate("ResetPassword");
+  }
+
+  function handleSignUp() {
+    navigation.navigate("SignUp");
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <KeyboardAvoidingView
+      style={styles.safe}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <View style={styles.container}>
-        {/* Logo circle */}
-        <View style={styles.logoCircle}>
-          <Text style={styles.logoText}>☕</Text>
+        <View style={styles.logoBox}>
+          <Text style={styles.logoEmoji}>☕️</Text>
         </View>
+        <Text style={styles.title}>Campus Queue</Text>
+        <Text style={styles.subtitle}>Skip the line, save time</Text>
 
-        <Text style={styles.appName}>Campus Queue</Text>
-        <Text style={styles.tagline}>Skip the line, save time</Text>
-
-        <View style={styles.inputGroup}>
+        <View style={styles.form}>
           <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
             placeholder="60xxxxxx@udst.edu.qa"
+            placeholderTextColor="#9CA3AF"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            textContentType="username"
             value={email}
             onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
           />
-        </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Password</Text>
+          <Text style={[styles.label, { marginTop: 16 }]}>Password</Text>
           <TextInput
             style={styles.input}
             placeholder="Enter your password"
+            placeholderTextColor="#9CA3AF"
+            secureTextEntry
+            autoCapitalize="none"
+            textContentType="password"
             value={password}
             onChangeText={setPassword}
-            secureTextEntry
           />
-        </View>
 
-        <TouchableOpacity style={styles.linkRight} onPress={handleForgotPassword}>
-          <Text style={styles.linkText}>Forgot password?</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={handleSignIn}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.primaryButtonText}>Sign In</Text>
-          )}
-        </TouchableOpacity>
-
-        <View style={styles.bottomRow}>
-          <Text style={styles.bottomText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={goToSignUp}>
-            <Text style={styles.bottomLink}>Sign Up</Text>
+          <TouchableOpacity
+            onPress={handleForgotPassword}
+            style={styles.forgotLink}
+          >
+            <Text style={styles.forgotText}>Forgot password?</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.signInButton, loading && { opacity: 0.7 }]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            <Text style={styles.signInText}>
+              {loading ? "Signing in..." : "Sign In"}
+            </Text>
+          </TouchableOpacity>
+
+          <View style={styles.footerRow}>
+            <Text style={styles.footerText}>Don't have an account? </Text>
+            <TouchableOpacity onPress={handleSignUp}>
+              <Text style={styles.footerLink}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-
-        <Text style={styles.footerCopy}>
+        <Text style={styles.footerNote}>
           © 2025 Campus Queue. All rights reserved.
         </Text>
       </View>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
-const responsiveSizes = {
-  logoWidth: width * 0.18,
-  logoRadius: width * 0.09,
-  containerPadding: width * 0.06,
-  logoText: width * 0.08,
-  appNameFont: width * 0.055,
-  taglineFont: width * 0.035,
-  labelFont: width * 0.035,
-  inputFont: width * 0.035,
-  buttonHeight: height * 0.065,
-};
-
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#F5F7FB' },
-  container: { 
-    flex: 1, 
-    paddingHorizontal: responsiveSizes.containerPadding, 
-    justifyContent: 'center' 
+  safe: {
+    flex: 1,
+    backgroundColor: "#F5F7FB",
   },
-  logoCircle: {
-    width: responsiveSizes.logoWidth,
-    height: responsiveSizes.logoWidth,
-    borderRadius: responsiveSizes.logoRadius,
-    backgroundColor: '#276EF1',
-    alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: height * 0.02,
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 80,
+    alignItems: "center",
   },
-  logoText: { fontSize: responsiveSizes.logoText, color: '#FFFFFF' },
-  appName: { 
-    fontSize: responsiveSizes.appNameFont, 
-    fontWeight: '700', 
-    textAlign: 'center',
-    marginBottom: height * 0.01,
+  logoBox: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: "#2563EB",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
   },
-  tagline: {
-    fontSize: responsiveSizes.taglineFont,
-    color: '#7A7F8C',
-    textAlign: 'center',
-    marginBottom: height * 0.03,
+  logoEmoji: {
+    fontSize: 40,
+    color: "#FFFFFF",
   },
-  inputGroup: { marginBottom: height * 0.018 },
-  label: { 
-    fontSize: responsiveSizes.labelFont, 
-    marginBottom: height * 0.008, 
-    color: '#1F2430',
-    fontWeight: '600',
+  title: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginTop: 4,
+    marginBottom: 32,
+  },
+  form: {
+    width: "100%",
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 6,
   },
   input: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
-    paddingHorizontal: width * 0.035,
-    paddingVertical: height * 0.018,
-    borderWidth: 1.5,
-    borderColor: '#E0E3EB',
-    fontSize: responsiveSizes.inputFont,
-    color: '#1F2430',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    fontSize: 15,
+    color: "#111827",
   },
-  linkRight: { alignItems: 'flex-end', marginBottom: height * 0.02 },
-  linkText: { color: '#276EF1', fontSize: responsiveSizes.labelFont, fontWeight: '600' },
-  primaryButton: {
-    backgroundColor: '#276EF1',
-    borderRadius: 14,
-    paddingVertical: responsiveSizes.buttonHeight * 0.4,
-    alignItems: 'center',
-    marginBottom: height * 0.025,
-    shadowColor: '#276EF1',
-    shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    elevation: 4,
+  forgotLink: {
+    marginTop: 8,
+    alignSelf: "flex-start",
   },
-  primaryButtonText: { 
-    color: '#FFFFFF', 
-    fontSize: width * 0.04, 
-    fontWeight: '700' 
+  forgotText: {
+    fontSize: 13,
+    color: "#2563EB",
+    fontWeight: "500",
   },
-  bottomRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: height * 0.03,
+  signInButton: {
+    marginTop: 24,
+    backgroundColor: "#2563EB",
+    borderRadius: 20,
+    paddingVertical: 14,
+    alignItems: "center",
   },
-  bottomText: { fontSize: responsiveSizes.labelFont, color: '#555A66' },
-  bottomLink: { 
-    fontSize: responsiveSizes.labelFont, 
-    color: '#276EF1', 
-    fontWeight: '700' 
+  signInText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
   },
-  demoBox: {
-    backgroundColor: '#EEF3FF',
-    borderRadius: 12,
-    paddingVertical: height * 0.02,
-    paddingHorizontal: width * 0.04,
-    alignItems: 'center',
-    marginBottom: height * 0.025,
+  footerRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 16,
   },
-  demoTitle: { fontSize: responsiveSizes.labelFont, fontWeight: '700' },
-  demoSubtitle: { 
-    fontSize: responsiveSizes.taglineFont, 
-    color: '#7A7F8C', 
-    textAlign: 'center' 
+  footerText: {
+    fontSize: 14,
+    color: "#6B7280",
   },
-  footerCopy: {
-    fontSize: responsiveSizes.taglineFont * 0.8,
-    textAlign: 'center',
-    color: '#9AA0B2',
+  footerLink: {
+    fontSize: 14,
+    color: "#2563EB",
+    fontWeight: "600",
+  },
+  footerNote: {
+    fontSize: 12,
+    color: "#9CA3AF",
+    marginTop: 40,
   },
 });

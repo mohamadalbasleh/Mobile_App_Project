@@ -129,7 +129,7 @@ export default function Orders({ navigation, orders }) {
                     />
                   </View>
 
-                  <View style={styles.divider} />
+                  <View className="divider" style={styles.divider} />
 
                   <View style={styles.itemsSection}>
                     <Text style={styles.itemsTitle}>
@@ -149,8 +149,10 @@ export default function Orders({ navigation, orders }) {
 
                   <View style={styles.footer}>
                     <View>
-                      <Text style={styles.timeLabel}>Pickup Time</Text>
-                      <Text style={styles.timeValue}>{item.time || "—"}</Text>
+                      <Text style={styles.timeLabel}>Estimated Time</Text>
+                      <Text style={styles.timeValue}>
+                        {item.estimatedTime || "-"}
+                      </Text>
                     </View>
                     <View style={styles.totalSection}>
                       <Text style={styles.totalLabel}>Total</Text>
@@ -180,13 +182,8 @@ export default function Orders({ navigation, orders }) {
                       <Text style={styles.actionButtonText}>View Receipt</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[
-                        styles.actionButton,
-                        styles.actionButtonSecondary,
-                      ]}
-                      onPress={() =>
-                        navigation.navigate("MainTabs", { screen: "Home" })
-                      }
+                      style={[styles.actionButton, styles.actionButtonSecondary]}
+                      onPress={() => navigation.navigate("Home")}
                     >
                       <Text style={styles.actionButtonTextSecondary}>
                         Back to Home

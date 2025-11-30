@@ -79,7 +79,6 @@ export default function SignUp({ navigation }) {
         },
       ]);
     } catch (error) {
-      console.log('Sign up error', error);
       Alert.alert('Sign up failed', error.message);
     } finally {
       setLoading(false);
@@ -132,7 +131,7 @@ export default function SignUp({ navigation }) {
           <Text style={styles.label}>University Email</Text>
           <TextInput
             style={styles.input}
-            placeholder="60xxxxxx@udst.edu.qa"
+            placeholder="example@university.edu"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
