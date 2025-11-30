@@ -7,10 +7,13 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../Config';
+
+const { width, height } = Dimensions.get('window');
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
@@ -38,6 +41,15 @@ export default function Login({ navigation }) {
 
   function goToSignUp() {
     navigation.navigate('SignUp');
+  }
+
+  async function handleForgotPassword() {
+    if (!email) {
+      Alert.alert('Email Required', 'Please enter your email address.');
+      return;
+    }
+
+    navigation.navigate('ResetPassword', { email: email.trim() });
   }
 
   return (
@@ -74,7 +86,7 @@ export default function Login({ navigation }) {
           />
         </View>
 
-        <TouchableOpacity style={styles.linkRight}>
+        <TouchableOpacity style={styles.linkRight} onPress={handleForgotPassword}>
           <Text style={styles.linkText}>Forgot password?</Text>
         </TouchableOpacity>
 
@@ -106,67 +118,111 @@ export default function Login({ navigation }) {
   );
 }
 
+const responsiveSizes = {
+  logoWidth: width * 0.18,
+  logoRadius: width * 0.09,
+  containerPadding: width * 0.06,
+  logoText: width * 0.08,
+  appNameFont: width * 0.055,
+  taglineFont: width * 0.035,
+  labelFont: width * 0.035,
+  inputFont: width * 0.035,
+  buttonHeight: height * 0.065,
+};
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#F5F7FB' },
-  container: { flex: 1, paddingHorizontal: 24, justifyContent: 'center' },
+  container: { 
+    flex: 1, 
+    paddingHorizontal: responsiveSizes.containerPadding, 
+    justifyContent: 'center' 
+  },
   logoCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: responsiveSizes.logoWidth,
+    height: responsiveSizes.logoWidth,
+    borderRadius: responsiveSizes.logoRadius,
     backgroundColor: '#276EF1',
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: height * 0.02,
   },
-  logoText: { fontSize: 32, color: '#FFFFFF' },
-  appName: { fontSize: 22, fontWeight: '600', textAlign: 'center' },
+  logoText: { fontSize: responsiveSizes.logoText, color: '#FFFFFF' },
+  appName: { 
+    fontSize: responsiveSizes.appNameFont, 
+    fontWeight: '700', 
+    textAlign: 'center',
+    marginBottom: height * 0.01,
+  },
   tagline: {
-    fontSize: 14,
+    fontSize: responsiveSizes.taglineFont,
     color: '#7A7F8C',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: height * 0.03,
   },
-  inputGroup: { marginBottom: 12 },
-  label: { fontSize: 14, marginBottom: 4, color: '#1F2430' },
+  inputGroup: { marginBottom: height * 0.018 },
+  label: { 
+    fontSize: responsiveSizes.labelFont, 
+    marginBottom: height * 0.008, 
+    color: '#1F2430',
+    fontWeight: '600',
+  },
   input: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: width * 0.035,
+    paddingVertical: height * 0.018,
+    borderWidth: 1.5,
     borderColor: '#E0E3EB',
-    fontSize: 14,
+    fontSize: responsiveSizes.inputFont,
+    color: '#1F2430',
   },
-  linkRight: { alignItems: 'flex-end', marginBottom: 16 },
-  linkText: { color: '#276EF1', fontSize: 13 },
+  linkRight: { alignItems: 'flex-end', marginBottom: height * 0.02 },
+  linkText: { color: '#276EF1', fontSize: responsiveSizes.labelFont, fontWeight: '600' },
   primaryButton: {
     backgroundColor: '#276EF1',
-    borderRadius: 10,
-    paddingVertical: 12,
+    borderRadius: 14,
+    paddingVertical: responsiveSizes.buttonHeight * 0.4,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: height * 0.025,
+    shadowColor: '#276EF1',
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 4,
   },
-  primaryButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
+  primaryButtonText: { 
+    color: '#FFFFFF', 
+    fontSize: width * 0.04, 
+    fontWeight: '700' 
+  },
   bottomRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 24,
+    marginBottom: height * 0.03,
   },
-  bottomText: { fontSize: 13, color: '#555A66' },
-  bottomLink: { fontSize: 13, color: '#276EF1', fontWeight: '500' },
+  bottomText: { fontSize: responsiveSizes.labelFont, color: '#555A66' },
+  bottomLink: { 
+    fontSize: responsiveSizes.labelFont, 
+    color: '#276EF1', 
+    fontWeight: '700' 
+  },
   demoBox: {
     backgroundColor: '#EEF3FF',
     borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: height * 0.02,
+    paddingHorizontal: width * 0.04,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: height * 0.025,
   },
-  demoTitle: { fontSize: 14, fontWeight: '600' },
-  demoSubtitle: { fontSize: 13, color: '#7A7F8C', textAlign: 'center' },
+  demoTitle: { fontSize: responsiveSizes.labelFont, fontWeight: '700' },
+  demoSubtitle: { 
+    fontSize: responsiveSizes.taglineFont, 
+    color: '#7A7F8C', 
+    textAlign: 'center' 
+  },
   footerCopy: {
-    fontSize: 11,
+    fontSize: responsiveSizes.taglineFont * 0.8,
     textAlign: 'center',
     color: '#9AA0B2',
   },

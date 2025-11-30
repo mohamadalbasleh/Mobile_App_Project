@@ -7,9 +7,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  Dimensions,
 } from "react-native";
 import { VENDORS } from "../data/vendors";
 
+const { width, height } = Dimensions.get('window');
 const CATEGORIES = ['All', 'Cafe', 'Coffee', 'Food', 'Snacks', 'Drinks'];
 
 export default function Home({ navigation }) {
@@ -23,7 +25,7 @@ export default function Home({ navigation }) {
   activeCategory === 'All'
     ? VENDORS
     : VENDORS.filter(
-        (v) => Array.isArray(v.categories) && v.categories.includes(activeCategory)
+        (v) => v.categoryTag === activeCategory
       );
 
   return (
